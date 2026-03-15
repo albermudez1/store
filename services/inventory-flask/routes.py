@@ -124,6 +124,80 @@ def get_product_by_id(product_id):
         **product
     }), 200
 
+@api.route("/products/<product_id>/stock", methods=["GET"])
+@require_gateway_token
+def get_product_stock(product_id):
+    products_ref = get_products_reference()
+    product = products_ref.child(product_id).get()
+
+    if not product:
+        return jsonify({
+            "message": "Producto no encontrado."
+        }), 404
+
+    return jsonify({
+        "id": product_id,
+        "name": product.get("name"),
+        "stock": product.get("stock", 0)
+    }), 200
+
+@api.route("/products/<product_id>/stock", methods=["PATCH"])
+@require_gateway_token
+def decrease_product_stock(product_id):
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "message": "No se enviaron datos."
+        }), 400
+
+    if "quantity" not in data:
+        return jsonify({
+            "message": "El campo 'quantity' es obligatorio."
+        }), 400
+
+    try:
+        quantity = int(data["quantity"])
+    except (ValueError, TypeError):
+        return jsonify({
+            "message": "El campo 'quantity' debe ser numérico."
+        }), 400
+
+    if quantity <= 0:
+        return jsonify({
+            "message": "La cantidad debe ser mayor que cero."
+        }), 400
+
+    products_ref = get_products_reference()
+    product_ref = products_ref.child(product_id)
+    product = product_ref.get()
+
+    if not product:
+        return jsonify({
+            "message": "Producto no encontrado."
+        }), 404
+
+    current_stock = int(product.get("stock", 0))
+
+    if current_stock < quantity:
+        return jsonify({
+            "message": "Stock insuficiente."
+        }), 400
+
+    new_stock = current_stock - quantity
+    product_ref.update({"stock": new_stock})
+
+    return jsonify({
+        "message": "Stock actualizado correctamente.",
+        "product": {
+            "id": product_id,
+            "name": product.get("name"),
+            "previous_stock": current_stock,
+            "discounted_quantity": quantity,
+            "current_stock": new_stock
+        }
+    }), 200
+
 @api.route("/products/<product_id>", methods=["PUT"])
 @require_gateway_token
 def update_product(product_id):
