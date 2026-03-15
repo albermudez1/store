@@ -69,4 +69,42 @@ class AuthController extends Controller
             'user' => auth('api')->user(),
         ], 200);
     }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|string|email',
+            'question' => 'required|string|max:255',
+            'answer' => 'required|string|max:255',
+            'new_password' => 'required|string|min:8',
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Usuario no encontrado.',
+            ], 404);
+        }
+
+        if ($user->question !== $validated['question']) {
+            return response()->json([
+                'message' => 'La pregunta de seguridad no coincide.',
+            ], 400);
+        }
+
+        if (! Hash::check($validated['answer'], $user->answer)) {
+            return response()->json([
+                'message' => 'La respuesta de seguridad es incorrecta.',
+            ], 400);
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Contraseña actualizada correctamente.',
+        ], 200);
+    }
+
 }
