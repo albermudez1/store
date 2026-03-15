@@ -1,0 +1,16 @@
+# OS / editor
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Python - Flask inventory service
+services/inventory-flask/venv/
+services/inventory-flask/__pycache__/
+services/inventory-flask/*.pyc
+services/inventory-flask/.env
+services/inventory-flask/credentials/
+
+# Laravel gateway
+services/gateway-laravel/.env
+services/gateway-laravel/vendor/
+services/gateway-laravel/node_modules/
