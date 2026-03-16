@@ -14,3 +14,7 @@ services/inventory-flask/credentials/
 services/gateway-laravel/.env
 services/gateway-laravel/vendor/
 services/gateway-laravel/node_modules/
+
+# Node - Express sales service
+services/sales-express/node_modules/
+services/sales-express/.env
